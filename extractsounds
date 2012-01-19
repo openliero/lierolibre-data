@@ -3,15 +3,16 @@
 usage="Usage: $0 <inputfile>"
 
 if [ $# != 1 ]; then
-	echo $usage
+	echo >&2 $usage
 	exit 1
 fi
 
 if [ ! -r "$1" ]; then
-	echo "Unable to read file '"$1"'"
-	echo $usage
+	echo >&2 "Unable to read file '"$1"', aborting"
 	exit 1
 fi
+
+hash sox 2>&- || { echo >&2 "This script requires the "'"SoX"'" audio manipulator, aborting"; exit 1; }
 
 sndfile="$1"
 sounds=30
