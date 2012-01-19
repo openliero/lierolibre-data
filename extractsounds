@@ -1,0 +1,39 @@
+#!/bin/bash
+
+sndfile=LIERO.SND
+sounds=30
+header=2
+entrysize=16
+nameoffset=0
+namesize=8
+offsetoffset=8
+offsetsize=4
+sizeoffset=12
+sizesize=4
+
+# Input file:
+# header
+# NAME|offset|size
+# NAME|offset|size
+# NAME|offset|size
+# Raw PCM DATA (signed 8bit, 22050 Hz, mono)...
+
+# For more info, look at
+# echo "$(dd if=$sndfile ibs=1 skip=2 | xxd -g 4 | head -30)"
+
+# For each entry
+for i in $(seq 0 $(($sounds - 1))); do
+	name="$(dd if=$sndfile ibs=1 \
+		skip=$(($i * $entrysize + $(($header + $nameoffset)))) \
+		count=$namesize 2>/dev/null | tr -d ' ')"
+
+	offset="$((0x$(dd if=$sndfile ibs=1 \
+		skip=$(($i * $entrysize + $(($header + $offsetoffset)))) \
+		count=$offsetsize 2>/dev/null | od -A n -t x4 | tr -d ' ')))"
+
+	size="$((0x$(dd if=$sndfile ibs=1 \
+		skip=$(($i * $entrysize + $(($header + $sizeoffset)))) \
+		count=$sizesize 2>/dev/null | od -A n -t x4 | tr -d ' ')))"
+
+	dd if=$sndfile of=$name.pcm ibs=1 skip=$offset count=$size 2>/dev/null
+done
