@@ -1,6 +1,19 @@
 #!/bin/bash
 
-sndfile=LIERO.SND
+usage="Usage: $0 <inputfile>"
+
+if [ $# != 1 ]; then
+	echo $usage
+	exit 1
+fi
+
+if [ ! -r "$1" ]; then
+	echo "Unable to read file '"$1"'"
+	echo $usage
+	exit 1
+fi
+
+sndfile="$1"
 sounds=30
 header=2
 entrysize=16
