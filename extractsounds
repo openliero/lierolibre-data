@@ -16,7 +16,7 @@ sizesize=4
 # NAME|offset|size
 # NAME|offset|size
 # NAME|offset|size
-# Raw PCM DATA (signed 8bit, 22050 Hz, mono)...
+# Raw PCM sound data (signed 8bit, 22050 Hz, mono)...
 
 # For more info, look at
 # echo "$(dd if=$sndfile ibs=1 skip=2 | xxd -g 4 | head -30)"
@@ -35,5 +35,6 @@ for i in $(seq 0 $(($sounds - 1))); do
 		skip=$(($i * $entrysize + $(($header + $sizeoffset)))) \
 		count=$sizesize 2>/dev/null | od -A n -t x4 | tr -d ' ')))"
 
-	dd if=$sndfile of=$name.pcm ibs=1 skip=$offset count=$size 2>/dev/null
+	dd if=$sndfile ibs=1 skip=$offset count=$size 2>/dev/null | \
+		sox -t raw -b 8 -e signed-integer -r 22050 -B -c 1 - -t wav $name.wav
 done
