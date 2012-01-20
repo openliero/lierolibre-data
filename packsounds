@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# This script reads a set of 30 name-defined wav files and packs them into a
+# SND-file for LIERO, files must be named correctly ("NAME.wav") but may differ
+# in content from the originals.
 
 usage="Usage: $0 <outputfile>"
 
@@ -89,13 +93,13 @@ writeheader
 i=0
 dataoffset="$indexsize"
 datasize=0
+
+# Index
 for n in $names; do
 	name="$n"
 	file="$n.wav"
 	entryoffset="$(($i * $entrysize + $headersize))"
 	dataoffset="$(($dataoffset + datasize))"
-	#dataoffset="$(dd if=$sndfile 2>&1 ibs=1 skip=$indexsize | \
-	#	sed -n 's/\([0-9]*\)\ bytes\ .*/\1/p')"
 	datasize="$(sox -t wav "$file" \
 		-t raw -b 8 -e signed-integer -r 22050 -B -c 1 - | \
 		dd 2>&1 | sed -n 's/\([0-9]*\)\ bytes\ .*/\1/p')"
@@ -103,13 +107,10 @@ for n in $names; do
 	writestring $name $namesize
 	writedec $dataoffset $offsetsize
 	writedec $datasize $sizesize
-	#sox -t wav "$file" -t raw -b 8 -e signed-integer -r 22050 -B -c 1 - \
-	#	>> $sndfile
-	#sox -t wav "$file" -t raw -b 8 -e signed-integer -r 22050 -B -c 1 - | \
-	#	dd 2>&- obs=1 seek=$offset of=$file
 	i=$(expr $i + 1)
 done
 
+# Raw data
 for n in $names; do
 	file="$n.wav"
 
