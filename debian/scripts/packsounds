@@ -1,0 +1,120 @@
+#!/bin/bash
+#
+# This script reads a set of 30 name-defined wav files and packs them into a
+# SND-file for LIERO, files must be named correctly ("NAME.wav") but may differ
+# in content from the originals.
+
+usage="Usage: $0 <outputfile>"
+
+if [ $# != 1 ]; then
+	echo >&2 $usage
+	exit 1
+fi
+
+if [ ! -w "$1" ]; then
+	echo >&2 "Unable to write to file '"$1"', aborting"
+	exit 1
+fi
+
+hash sox 2>&- || { echo >&2 "This script requires the "'"SoX"'" audio manipulator, aborting"; exit 1; }
+
+sndfile="$1"
+sounds=30
+headersize=2
+entrysize=16
+nameoffset=0
+namesize=8
+offsetoffset=8
+offsetsize=4
+sizeoffset=12
+sizesize=4
+indexsize=482
+names="SHOTGUN SHOT RIFLE BAZOOKA BLASTER THROW LARPA EXP3A EXP3B EXP2 EXP3 EXP4 EXP5 DIRT BUMP DEATH1 DEATH2 DEATH3 HURT1 HURT2 HURT3 ALIVE BEGIN DROPSHEL RELOADED MOVEUP MOVEDOWN SELECT BOING BURNER"
+
+# Output file:
+# header
+# NAME|offset|size
+# NAME|offset|size
+# NAME|offset|size
+# Raw PCM sound data (signed 8bit, 22050 Hz, mono)...
+
+function pad {
+# Write $1 NULL bytes to file
+	pad="$1"
+	p=0
+
+	until [ $p = $pad ]; do
+		printf "\x00" >> $sndfile
+		p=$(expr $p + 1)
+	done
+}
+
+function writedec {
+# write decimal number $1 to file, and pad to $2 bytes
+	dec="$1"
+	decsize="$2"
+	hex="$(printf '%x\n' $1)"
+	d=0
+
+	for h in $(echo "$hex" | rev | fold -b2 | rev); do
+		printf "\x$h" >> $sndfile
+		export d=$(expr $d + 1)
+	done
+
+	if [ $decsize ]; then
+		pad $(($decsize - $d))
+	fi
+}
+
+function writeheader {
+	writedec $sounds $headersize
+}
+
+function writestring () {
+# Write string $1 to file, padding to $2 bytes
+	name="$1"
+	stringsize="$2"
+	s=0
+
+	for c in $(echo $name | fold -b1); do
+		dec=$(printf "%d\n" \'$c)
+		writedec $dec
+		export s=$(expr $s + 1)
+	done
+	if [ $stringsize ]; then
+		pad $(($stringsize - $s))
+	fi
+}
+
+# Main
+
+echo -n "" > $sndfile
+writeheader
+i=0
+dataoffset="$indexsize"
+datasize=0
+
+# Index
+for n in $names; do
+	name="$n"
+	file="$n.wav"
+	entryoffset="$(($i * $entrysize + $headersize))"
+	dataoffset="$(($dataoffset + datasize))"
+	datasize="$(sox -t wav "$file" \
+		-t raw -b 8 -e signed-integer -r 22050 -B -c 1 - | \
+		dd 2>&1 | sed -n 's/\([0-9]*\)\ bytes\ .*/\1/p')"
+
+	writestring $name $namesize
+	writedec $dataoffset $offsetsize
+	writedec $datasize $sizesize
+	i=$(expr $i + 1)
+done
+
+# Raw data
+for n in $names; do
+	file="$n.wav"
+
+	sox -t wav "$file" -t raw -b 8 -e signed-integer -r 22050 -B -c 1 - \
+		>> $sndfile
+done
+
