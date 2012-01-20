@@ -1,14 +1,14 @@
 #!/bin/bash
 
-usage="Usage: $0 <inputfile>"
+usage="Usage: $0 <outputfile>"
 
 if [ $# != 1 ]; then
 	echo >&2 $usage
 	exit 1
 fi
 
-if [ ! -r "$1" ]; then
-	echo >&2 "Unable to read file '"$1"', aborting"
+if [ ! -w "$1" ]; then
+	echo >&2 "Unable to write to file '"$1"', aborting"
 	exit 1
 fi
 
@@ -16,7 +16,7 @@ hash sox 2>&- || { echo >&2 "This script requires the "'"SoX"'" audio manipulato
 
 sndfile="$1"
 sounds=30
-header=2
+headersize=2
 entrysize=16
 nameoffset=0
 namesize=8
@@ -25,28 +25,74 @@ offsetsize=4
 sizeoffset=12
 sizesize=4
 
-# Input file:
+# Output file:
 # header
 # NAME|offset|size
 # NAME|offset|size
 # NAME|offset|size
 # Raw PCM sound data (signed 8bit, 22050 Hz, mono)...
 
-# For more info, look at
-# echo "$(dd if=$sndfile ibs=1 skip=2 | xxd -g 4 | head -30)"
+function pad {
+# Write $1 NULL bytes to file
+	pad="$1"
+	p=0
+	until [ $p = $pad ]; do
+		printf "\x$i" >> $sndfile
+		p=$(expr $s + 1)
+	done
+}
+
+function writedec {
+# write decimal number $1 to file, and pad to $2 bytes
+	dec="$1"
+	size="$2"
+	hex="$(printf '%x\n' $1)"
+	s=0
+
+	for i in "$(echo "$hex" | rev | fold -b 2 | rev)"; do
+		printf "\x$i" >> $sndfile
+		s=$(expr $s + 1)
+	done
+
+	if [ $size ]; then
+		pad $(($size - $s))
+	fi
+}
+
+function writeheader {
+	writedec 30 2
+}
+
+function writestring {
+# Write string $1 to file, padding to $2 bytes
+	name="$1"
+	size="$2"
+	s=0
+
+	for i in $(echo $name | fold -b 1); do
+		dec=$(printf "%d\n" \'$i)
+		writedec $dec
+		s=$(expr $s + 1)
+	done
+
+	if [ $size ]; then
+		pad $(($size - $s))
+	fi
+}
+
 
 # For each entry
 for i in $(seq 0 $(($sounds - 1))); do
 	name="$(dd if=$sndfile ibs=1 \
-		skip=$(($i * $entrysize + $(($header + $nameoffset)))) \
+		skip=$(($i * $entrysize + $(($headersize + $nameoffset)))) \
 		count=$namesize 2>/dev/null | tr -d ' ')"
 
 	offset="$((0x$(dd if=$sndfile ibs=1 \
-		skip=$(($i * $entrysize + $(($header + $offsetoffset)))) \
+		skip=$(($i * $entrysize + $(($headersize + $offsetoffset)))) \
 		count=$offsetsize 2>/dev/null | od -A n -t x4 | tr -d ' ')))"
 
 	size="$((0x$(dd if=$sndfile ibs=1 \
-		skip=$(($i * $entrysize + $(($header + $sizeoffset)))) \
+		skip=$(($i * $entrysize + $(($headersize + $sizeoffset)))) \
 		count=$sizesize 2>/dev/null | od -A n -t x4 | tr -d ' ')))"
 
 	dd if=$sndfile ibs=1 skip=$offset count=$size 2>/dev/null | \
