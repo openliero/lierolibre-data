@@ -1,0 +1,25 @@
+#!/bin/bash -x
+#
+# Blah
+
+gfxfile="$1"
+headersize1=10
+imgsize1=$((16 * 1760))
+imgsize2=$((7 * 910))
+imgsize3=$((4 * 120))
+imgoffset1="$headersize1"
+headersize2=4
+imgoffset2="$(($headersize1 + $imgsize1 + $headersize2))"
+headersize3=3
+imgoffset3="$(($headersize1 + $imgsize1 + $headersize2 + $imgsize2 + \
+	$headersize3))"
+imgdim1=16x1759
+imgdim2=7x910
+imgdim3=4x120
+
+dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset1" count="$imgsize1" | \
+	convert -depth 8 -size "$imgdim1" gray:- gfx1.xpm
+dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset2" count="$imgsize2" | \
+	convert -depth 8 -size "$imgdim2" gray:- gfx2.xpm
+dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset3" count="$imgsize3" | \
+	convert -depth 8 -size "$imgdim3" gray:- gfx3.xpm
