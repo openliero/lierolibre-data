@@ -4,16 +4,16 @@
 
 gfxfile="$1"
 headersize1=10
+headersize2=4
+headersize3=4
 imgsize1=$((16 * 1760))
 imgsize2=$((7 * 910))
 imgsize3=$((4 * 120))
 imgoffset1="$headersize1"
-headersize2=4
 imgoffset2="$(($headersize1 + $imgsize1 + $headersize2))"
-headersize3=3
 imgoffset3="$(($headersize1 + $imgsize1 + $headersize2 + $imgsize2 + \
 	$headersize3))"
-imgdim1=16x1759
+imgdim1=16x1760
 imgdim2=7x910
 imgdim3=4x120
 
