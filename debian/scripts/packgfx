@@ -3,23 +3,93 @@
 # Blah
 
 gfxfile="$1"
-headersize1=10
-headersize2=4
-headersize3=4
-imgsize1=$((16 * 1760))
-imgsize2=$((7 * 910))
-imgsize3=$((4 * 120))
-imgoffset1="$headersize1"
-imgoffset2="$(($headersize1 + $imgsize1 + $headersize2))"
-imgoffset3="$(($headersize1 + $imgsize1 + $headersize2 + $imgsize2 + \
-	$headersize3))"
-imgdim1=16x1760
-imgdim2=7x910
-imgdim3=4x120
 
-dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset1" count="$imgsize1" | \
-	convert -depth 8 -size "$imgdim1" gray:- gfx1.xpm
-dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset2" count="$imgsize2" | \
-	convert -depth 8 -size "$imgdim2" gray:- gfx2.xpm
-dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset3" count="$imgsize3" | \
-	convert -depth 8 -size "$imgdim3" gray:- gfx3.xpm
+images=
+
+title="Liero"
+titlesize=6
+
+img1_x=16
+img1_y_factor1=16
+img1_y_factor2=110
+img1_y=$(($img1_y_factor1 * $img1_y_factor2))
+img1_size=$(($img1_x *$img1_y))
+img1_header="2 $img1_x $img1_y_factor1 $img1_y_factor2"
+
+img2_x=7
+img2_y_factor1=7
+img2_y_factor2=130
+img2_y=$(($img2_y_factor1 * $img2_y_factor2))
+img2_size=$(($img2_x *$img2_y))
+img2_header="2 $img2_x $img2_y_factor1 $img2_y_factor2"
+
+img3_x=4
+img3_y_factor1=4
+img3_y_factor2=30
+img3_y=$(($img3_y_factor1 * $img3_y_factor2))
+img3_size=$(($img3_x *$img3_y))
+img3_header="2 $img3_x $img3_y_factor1 $img3_y_factor2"
+
+function pad {
+# Write $1 NULL bytes to file
+	pad="$1"
+	p=0
+
+	until [ $p = $pad ]; do
+		printf "\x00" >> $gfxfile
+		p=$(expr $p + 1)
+	done
+}
+
+function writedec {
+# write decimal number $1 to file, and pad to $2 bytes
+	dec="$1"
+	decsize="$2"
+	hex="$(printf '%x\n' $1)"
+	d=0
+
+	for h in $(echo "$hex" | rev | fold -b2 | rev); do
+		printf "\x$h" >> $gfxfile
+		export d=$(expr $d + 1)
+	done
+
+	if [ $decsize ]; then
+		pad $(($decsize - $d))
+	fi
+}
+
+function writestring () {
+# Write string $1 to file, padding to $2 bytes
+	name="$1"
+	stringsize="$2"
+	s=0
+
+	for c in $(echo $name | fold -b1); do
+		dec=$(printf "%d\n" \'$c)
+		writedec $dec
+		export s=$(expr $s + 1)
+	done
+	if [ $stringsize ]; then
+		pad $(($stringsize - $s))
+	fi
+}
+
+# Main
+
+echo -n "" > "$gfxfile"
+writestring "$title" "$titlesize"
+
+for i in $img1_header; do
+	writedec "$i"
+done
+convert gfx1.xpm -depth 8 gray:- >> "$gfxfile"
+
+for i in $img2_header; do
+	writedec "$i"
+done
+convert gfx2.xpm -depth 8 gray:- >> "$gfxfile"
+
+for i in $img3_header; do
+	writedec "$i"
+done
+convert gfx3.xpm -depth 8 gray:- >> "$gfxfile"
