@@ -49,9 +49,12 @@ imgdim1=16x1760
 imgdim2=7x910
 imgdim3=4x120
 
-dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset1" count="$imgsize1" | \
+dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset1" count="$imgsize1" \
+	2>/dev/null | \
 	convert -depth 8 -size "$imgdim1" gray:- gfx1.xpm
-dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset2" count="$imgsize2" | \
+dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset2" count="$imgsize2" \
+	2>/dev/null | \
 	convert -depth 8 -size "$imgdim2" gray:- gfx2.xpm
-dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset3" count="$imgsize3" | \
+dd if="$gfxfile" bs=1 ibs=1 skip="$imgoffset3" count="$imgsize3" \
+	2>/dev/null | \
 	convert -depth 8 -size "$imgdim3" gray:- gfx3.xpm
