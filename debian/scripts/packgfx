@@ -33,6 +33,9 @@
 # This script reads a set of three greyscale xpm images with dimensions
 # 16x1760, 7x910, 4x120, correspondingly named gfx1.xpm, gfx2.xpm gfx3.xpm and
 # packs them into a CHR-file for Liero.
+#
+# Credit goes to Sander de Jong for information regarding the CHR file format:
+# http://lierohell.free.fr/lierohack/docformats/liero-chr.html
 
 gfxfile="$1"
 

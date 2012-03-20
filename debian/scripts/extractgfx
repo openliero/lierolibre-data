@@ -33,6 +33,9 @@
 # This script extracts the three sprite canvases contained within LIERO.CHR,
 # and dumps them as greyscale images in xpm format, use the 'packgfx' script to
 # pack them back up again
+#
+# Credit goes to Sander de Jong for information regarding the CHR file format:
+# http://lierohell.free.fr/lierohack/docformats/liero-chr.html
 
 gfxfile="$1"
 headersize1=10

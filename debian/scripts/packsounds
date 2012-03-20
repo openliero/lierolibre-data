@@ -33,6 +33,9 @@
 # This script reads a set of 30 name-defined wav files and packs them into a
 # SND-file for LIERO, files must be named correctly ("NAME.wav") but may differ
 # in content from the originals.
+#
+# Credit goes to Tim Verweij for information regarding the SND file format:
+# http://lierohell.free.fr/lierohack/docformats/liero-snd.html
 
 usage="Usage: $0 <outputfile>"
 
