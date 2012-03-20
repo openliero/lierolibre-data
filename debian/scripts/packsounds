@@ -59,7 +59,7 @@ offsetsize=4
 sizeoffset=$(($namesize + offsetsize))
 sizesize=4
 entrysize=$(($namesize + $offsetsize + $sizesize))
-indexsize=$(($sounds * $entrysize))
+indexsize=$(($headersize + $sounds * $entrysize))
 names="SHOTGUN SHOT RIFLE BAZOOKA BLASTER THROW LARPA EXP3A EXP3B EXP2 EXP3 EXP4 EXP5 DIRT BUMP DEATH1 DEATH2 DEATH3 HURT1 HURT2 HURT3 ALIVE BEGIN DROPSHEL RELOADED MOVEUP MOVEDOWN SELECT BOING BURNER"
 
 # Output file:
@@ -129,7 +129,7 @@ i=0
 for n in $names; do
 	name="$n"
 	file="$n.wav"
-	entryoffset="$(($i * $entrysize + $headersize))"
+	entryoffset="$(($headersize + $i * $entrysize))"
 	dataoffset="$(($dataoffset + datasize))"
 	datasize="$(sox -t wav "$file" \
 		-t raw -b 8 -e signed-integer -r 22050 -B -c 1 - | \
