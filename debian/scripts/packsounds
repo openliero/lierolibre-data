@@ -52,14 +52,14 @@ hash sox 2>&- || { echo >&2 "This script requires the "'"SoX"'" audio manipulato
 sndfile="$1"
 sounds=30
 headersize=2
-entrysize=16
 nameoffset=0
 namesize=8
-offsetoffset=8
+offsetoffset=$namesize
 offsetsize=4
-sizeoffset=12
+sizeoffset=$(($namesize + offsetsize))
 sizesize=4
-indexsize=482
+entrysize=$(($namesize + $offsetsize + $sizesize))
+indexsize=$(($sounds * $entrysize))
 names="SHOTGUN SHOT RIFLE BAZOOKA BLASTER THROW LARPA EXP3A EXP3B EXP2 EXP3 EXP4 EXP5 DIRT BUMP DEATH1 DEATH2 DEATH3 HURT1 HURT2 HURT3 ALIVE BEGIN DROPSHEL RELOADED MOVEUP MOVEDOWN SELECT BOING BURNER"
 
 # Output file:
@@ -121,11 +121,11 @@ function writestring () {
 
 echo -n "" > $sndfile
 writeheader
-i=0
 dataoffset="$indexsize"
 datasize=0
 
 # Index
+i=0
 for n in $names; do
 	name="$n"
 	file="$n.wav"
