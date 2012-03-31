@@ -1,0 +1,30 @@
+ALIVE.wav
+BAZOOKA.wav [OK]
+BEGIN.wav
+BLASTER.wav
+BOING.wav
+BUMP.wav
+BURNER.wav
+DEATH1.wav
+DEATH2.wav
+DEATH3.wav
+DIRT.wav
+DROPSHEL.wav [OK]
+EXP2.wav [OK]
+EXP3A.wav [OK]
+EXP3B.wav [OK]
+EXP3.wav [OK]
+EXP4.wav [OK]
+EXP5.wav [OK]
+HURT1.wav
+HURT2.wav
+HURT3.wav
+LARPA.wav
+MOVEDOWN.wav
+MOVEUP.wav
+RELOADED.wav [OK]
+RIFLE.wav [OK]
+SELECT.wav
+SHOTGUN.wav [OK]
+SHOT.wav [OK]
+THROW.wav
