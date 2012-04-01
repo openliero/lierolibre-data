@@ -4,8 +4,11 @@ The sounds in this directory are replacements for the original Liero sounds
 
      -----//-----
 
-Files: BAZOOKA.wav DROPSHEL.wav EXP2.wav EXP3A.wav EXP3B.wav EXP3.wav EXP4.wav
-       EXP5.wav RELOADED.wav RIFLE.wav SHOTGUN.wav SHOT.wav
+Files: ALIVE.wav BAZOOKA.wav BEGIN.wav BLASTER.wav BOING.wav BUMP.wav
+       BURNER.wav DEATH1.wav DEATH2.wav DEATH3.wav DIRT.wav DROPSHEL.wav
+       EXP2.wav EXP3A.wav EXP3B.wav EXP3.wav EXP4.wav EXP5.wav HURT1.wav
+       HURT2.wav HURT3.wav LARPA.wav MOVEDOWN.wav MOVEUP.wav RELOADED.wav
+       RIFLE.wav SELECT.wav SHOTGUN.wav SHOT.wav THROW.wav
 Copyright: "sea"
 License: WTFPL
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
