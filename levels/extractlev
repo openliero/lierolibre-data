@@ -30,7 +30,7 @@
 #
 # -----//-----
 #
-# This script extracts the level canvas contained within a Liero .LEV fileand
+# This script extracts the level canvas contained within a Liero .LEV file and
 # dumps it to a greyscale images in xpm format, use the 'packlev' script to
 # pack it back up again.
 #
