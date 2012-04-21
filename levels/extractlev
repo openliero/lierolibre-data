@@ -37,14 +37,26 @@
 # Credit goes to Tim Verweij for information regarding the LEV file format:
 # http://lierohell.free.fr/lierohack/docformats/liero-lev.html
 
-levfilepath="$1"
-levfile="${levfilepath##*/}"
-xpmfile="${levfile%.*}".xpm
+usage="Usage: $0 <inputfile.lev> <outputfile.xpm>"
+
+if [ $# != 2 ]; then
+	echo >&2 $usage
+	exit 1
+fi
+
+if [ ! -r "$1" ]; then
+	echo >&2 "Unable to read file '"$1"', aborting"
+	exit 1
+fi
+
+touch "$2" 2>&- || { echo >&2 "'"$2"' is not writable, aborting"; exit 1; }
+
+inputfile="$1"
+outputfile="$2"
 
 imgsize=$((504 * 350))
 imgdim=504x350
 
-echo $xpmfile
-dd if="$levfilepath" bs=1 ibs=1 count="$imgsize" 2>/dev/null | \
-	convert -depth 8 -size "$imgdim" gray:- "$xpmfile"
+dd if="$inputfile" bs=1 ibs=1 count="$imgsize" 2>/dev/null | \
+	convert -depth 8 -size "$imgdim" gray:- "$outputfile"
 
