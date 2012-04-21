@@ -30,29 +30,45 @@
 #
 # -----//-----
 #
-# This script reads a set of 30 name-defined wav files and packs them into a
-# SND-file for LIERO, files must be named correctly ("NAME.wav") but may differ
-# in content from the originals.
+# This script reads a set of 30 name-defined wav files from a given directory
+# and packs them into a SND-file for LIERO, files must be named correctly
+# ("NAME.wav") but may differ in content from the originals.
 #
 # Credit goes to Tim Verweij for information regarding the SND file format:
 # http://lierohell.free.fr/lierohack/docformats/liero-snd.html
 
-usage="Usage: $0 <outputfile>"
+usage="Usage: $0 <inputdir> <outputfile.SND>"
 
-if [ $# != 1 ]; then
+if [ $# != 2 ]; then
 	echo >&2 $usage
 	exit 1
 fi
 
-touch "$1" || { echo >&2 "Unable to write to file '"$1"', aborting"; exit 1; }
-if [ ! -w "$1" ]; then
-	echo >&2 "Unable to write to file '"$1"', aborting"
+if [ ! -d "$1" ]; then
+	echo >&2 "'"$1"' is not a directory, aborting"
 	exit 1
 fi
 
+if [ ! -r "$1" ]; then
+	echo >&2 "'"$1"' is not readable, aborting"
+	exit 1
+fi
+
+touch "$2" 2>&- || { echo >&2 "Unable to write to file '"$1"', aborting"; exit 1; }
+
 hash sox 2>&- || { echo >&2 "This script requires the "'"SoX"'" audio manipulator, aborting"; exit 1; }
 
-sndfile="$1"
+inputdir="$1"
+outputfile="$2"
+names="SHOTGUN SHOT RIFLE BAZOOKA BLASTER THROW LARPA EXP3A EXP3B EXP2 EXP3 EXP4 EXP5 DIRT BUMP DEATH1 DEATH2 DEATH3 HURT1 HURT2 HURT3 ALIVE BEGIN DROPSHEL RELOADED MOVEUP MOVEDOWN SELECT BOING BURNER"
+
+for i in $names; do
+	if [ ! -r "$inputdir"/"$i".wav ]; then
+		echo >&2 "'"$inputdir"/"$i".wav' is not readable or nonexistant, aborting"
+		exit 1
+	fi
+done
+
 sounds=30
 headersize=2
 nameoffset=0
@@ -63,7 +79,6 @@ sizeoffset=$(($namesize + offsetsize))
 sizesize=4
 entrysize=$(($namesize + $offsetsize + $sizesize))
 indexsize=$(($headersize + $sounds * $entrysize))
-names="SHOTGUN SHOT RIFLE BAZOOKA BLASTER THROW LARPA EXP3A EXP3B EXP2 EXP3 EXP4 EXP5 DIRT BUMP DEATH1 DEATH2 DEATH3 HURT1 HURT2 HURT3 ALIVE BEGIN DROPSHEL RELOADED MOVEUP MOVEDOWN SELECT BOING BURNER"
 
 # Output file:
 # header
@@ -78,7 +93,7 @@ function pad {
 	p=0
 
 	until [ $p = $pad ]; do
-		printf "\x00" >> $sndfile
+		printf "\x00" >> $outputfile
 		p=$(expr $p + 1)
 	done
 }
@@ -91,7 +106,7 @@ function writedec {
 	d=0
 
 	for h in $(echo "$hex" | rev | fold -b2 | rev); do
-		printf "\x$h" >> $sndfile
+		printf "\x$h" >> $outputfile
 		export d=$(expr $d + 1)
 	done
 
@@ -122,7 +137,7 @@ function writestring () {
 
 # Main
 
-echo -n "" > $sndfile
+echo -n "" > $outputfile
 writeheader
 dataoffset="$indexsize"
 datasize=0
@@ -131,7 +146,7 @@ datasize=0
 i=0
 for n in $names; do
 	name="$n"
-	file="$n.wav"
+	file="$inputdir"/"$n".wav
 	entryoffset="$(($headersize + $i * $entrysize))"
 	dataoffset="$(($dataoffset + datasize))"
 	datasize="$(sox -t wav "$file" \
@@ -146,9 +161,9 @@ done
 
 # Raw data
 for n in $names; do
-	file="$n.wav"
+	file="$inputdir"/"$n".wav
 
 	sox -t wav "$file" -t raw -b 8 -e signed-integer -r 22050 -B -c 1 - \
-		>> $sndfile
+		>> $outputfile
 done
 
